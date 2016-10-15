@@ -1,17 +1,30 @@
-from zipline.api import order, symbol
+import pytz
+from datetime import datetime
 
-stocks = ['AAPL', 'MSFT']
+from zipline.algorithm import TradingAlgorithm
+from zipline.utils.factory import load_bars_from_yahoo
+from zipline.api import symbol, order, record
 
+# Load data manually from Yahoo! finance
+start = datetime(2000, 1, 1, 0, 0, 0, 0, pytz.utc)
+end = datetime(2012, 1, 1, 0, 0, 0, 0, pytz.utc)
+data = load_bars_from_yahoo(stocks=['AAPL'], start=start,
+                            end=end)
 
+# Define algorithm
 def initialize(context):
-    context.has_ordered = False
-    context.stocks = stocks
-
+    pass
 
 def handle_data(context, data):
-    if not context.has_ordered:
-        for stock in context.stocks:
-            order(symbol(stock), 100)
+    order(symbol('AAPL'), 10)
+    record(AAPL=data[symbol('AAPL')].price)
+
 
 if __name__ == '__main__':
-    pass
+    # Create algorithm object passing in initialize and
+    # handle_data functions
+    algo_obj = TradingAlgorithm(initialize=initialize,
+                                handle_data=handle_data)
+
+    # Run algorithm
+    perf_manual = algo_obj.run(data)
